@@ -129,7 +129,7 @@ app.get('/api/history', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-app.get("/", (req, res) => {
-  res.send("✅ Weather API backend is running");
-});
+// app.get("/", (req, res) => {
+//   res.send("✅ Weather API backend is running");
+// });
 
