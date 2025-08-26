@@ -1,4 +1,4 @@
-const API_URL = "https://weather-app-backend-jl9w.onrender.com/api/history";
+const API_URL = "https://weather-app-backend-jl9w.onrender.com/api";
 
 // change this to your Render backend URL
 
