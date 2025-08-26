@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Simple OpenWeather Frontend</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="search">
+      <input id="cityInput" type="text" placeholder="Enter city (e.g. London)" value="London" />
+      <button id="searchBtn">Search</button>
+    </div>
+
+    <div id="card" class="card hidden">
+      <div class="top">
+        <div>
+          <div id="cityName" class="city">City</div>
+          <div id="time" class="time">Local time</div>
+        </div>
+        <div id="country" class="time">Country</div>
+      </div>
+
+      <div class="main">
+        <div class="icon" id="weatherIcon">--</div>
+        <div>
+          <div id="temp" class="temp">--°C</div>
+          <div id="desc" class="desc">Description</div>
+        </div>
+      </div>
+
+      <div class="details">
+        <div class="detail">Humidity: <span id="humidity">--</span>%</div>
+        <div class="detail">Wind: <span id="wind">--</span> m/s</div>
+        <div class="detail">Pressure: <span id="pressure">--</span> hPa</div>
+      </div>
+
+      <div id="hint" class="hint">Tip: Allow your browser to use location to get weather for your current place.</div>
+    </div>
+
+    <div id="error" class="hint hidden" style="color:#b91c1c"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
