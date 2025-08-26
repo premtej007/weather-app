@@ -3,45 +3,252 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Simple OpenWeather Frontend</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Weather — Clean & Reactive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg-1: #f5f8ff;
+      --bg-2: #eef6ff;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --glass: rgba(255,255,255,0.7);
+      --success: #16a34a;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;}
+    body{
+      margin:0; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(37,99,235,0.06), transparent 8%), linear-gradient(180deg,var(--bg-1),var(--bg-2));
+      display:flex; align-items:center; justify-content:center; padding:28px;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
+    .container{width:100%; max-width:920px; display:grid; grid-template-columns: 1fr 360px; gap:20px; align-items:start}
+    @media (max-width:880px){ .container{grid-template-columns:1fr; padding:0 12px} }
+
+    /* Left - main card */
+    .panel{background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.9)); border-radius:14px; padding:18px; box-shadow: 0 10px 30px rgba(38,57,113,0.08);}
+
+    .heading{display:flex; align-items:center; justify-content:space-between; gap:12px}
+    .title{font-weight:700; font-size:18px}
+    .subtitle{color:var(--muted); font-size:13px}
+
+    .controls{display:flex; gap:10px; margin-top:12px}
+    .searchbox{flex:1; display:flex; gap:8px}
+    .searchbox input{flex:1; padding:12px 14px; border-radius:12px; border:1px solid #e6eefc; background:transparent}
+    .btn{padding:11px 14px; border-radius:12px; border:0; cursor:pointer; font-weight:600}
+    .btn-primary{background:var(--accent); color:#fff}
+    .btn-ghost{background:transparent; border:1px solid #e6eefc}
+
+    .card-big{display:flex; gap:18px; align-items:center; margin-top:18px}
+    .icon-big{width:120px; height:120px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:48px; background:linear-gradient(180deg, rgba(37,99,235,0.08), rgba(37,99,235,0.02));}
+    .meta{flex:1}
+    .city{font-size:28px; font-weight:700}
+    .meta .time{color:var(--muted); font-size:13px}
+    .temp{font-size:44px; font-weight:700; margin-top:8px}
+    .desc{margin-top:8px; color:var(--muted)}
+
+    .stats{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap}
+    .stat{background:#f8fbff; border-radius:12px; padding:10px; flex:1; min-width:120px; border:1px solid #eef6ff; font-size:13px}
+
+    .hint{margin-top:12px; color:var(--muted); font-size:13px}
+
+    /* Right - history & actions */
+    .side{display:flex; flex-direction:column; gap:12px}
+    .card-side{background:var(--card); border-radius:12px; padding:12px; box-shadow: 0 8px 20px rgba(22,33,84,0.04)}
+    .history-list{display:flex; flex-direction:column; gap:8px; max-height:420px; overflow:auto}
+    .history-item{display:flex; justify-content:space-between; gap:8px; align-items:center; padding:8px; border-radius:8px; background:linear-gradient(180deg,#fff,#fbfdff); border:1px solid #f1f6ff}
+    .history-item small{color:var(--muted)}
+
+    /* loading */
+    .loader{width:18px;height:18px;border-radius:50%;border:3px solid rgba(0,0,0,0.08);border-top-color:var(--accent); animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .hidden{display:none}
+    .center{display:flex; align-items:center; justify-content:center}
+
+    /* micro interactions */
+    button:active{transform:translateY(1px)}
+    .toast{position:fixed; right:20px; bottom:20px; background:#111827; color:#fff; padding:10px 14px; border-radius:10px; box-shadow:0 6px 20px rgba(2,6,23,0.3)}
+  </style>
 </head>
 <body>
-  <div class="app">
-    <div class="search">
-      <input id="cityInput" type="text" placeholder="Enter city (e.g. London)" value="London" />
-      <button id="searchBtn">Search</button>
+  <div class="container">
+    <div class="panel">
+      <div class="heading">
+        <div>
+          <div class="title">Weather — Simple & Fast</div>
+          <div class="subtitle">Enter a city, get current weather & recent searches</div>
+        </div>
+        <div class="subtitle">Powered by OpenWeather + MongoDB</div>
+      </div>
+
+      <div class="controls">
+        <div class="searchbox">
+          <input id="cityInput" type="text" placeholder="e.g. Mumbai" value="London" aria-label="City name" />
+          <button id="searchBtn" class="btn btn-primary">Search</button>
+        </div>
+        <button id="locBtn" class="btn btn-ghost" title="Use my location">Use my location</button>
+      </div>
+
+      <div id="card" class="card-big hidden">
+        <div class="icon-big" id="weatherIcon">☁️</div>
+        <div class="meta">
+          <div class="city" id="cityName">City</div>
+          <div class="time" id="time">Local time</div>
+          <div class="temp" id="temp">--°C</div>
+          <div class="desc" id="desc">Description</div>
+
+          <div class="stats">
+            <div class="stat">Humidity: <strong id="humidity">--</strong>%</div>
+            <div class="stat">Wind: <strong id="wind">--</strong> m/s</div>
+            <div class="stat">Pressure: <strong id="pressure">--</strong> hPa</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="error" class="hint hidden" style="color:#b91c1c"></div>
+      <div class="hint">Tip: Click <strong>Use my location</strong> to auto-detect your city (uses an open reverse-geocoding API).</div>
     </div>
 
-    <div id="card" class="card hidden">
-      <div class="top">
-        <div>
-          <div id="cityName" class="city">City</div>
-          <div id="time" class="time">Local time</div>
+    <aside class="side">
+      <div class="card-side">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px">
+          <strong>Recent searches</strong>
+          <button id="clearHistory" class="btn btn-ghost" style="padding:6px 8px;font-size:13px">Clear</button>
         </div>
-        <div id="country" class="time">Country</div>
+        <div id="history" class="history-list"></div>
       </div>
 
-      <div class="main">
-        <div class="icon" id="weatherIcon">--</div>
-        <div>
-          <div id="temp" class="temp">--°C</div>
-          <div id="desc" class="desc">Description</div>
-        </div>
+      <div class="card-side center" style="flex-direction:column">
+        <div style="font-weight:600; margin-bottom:8px">Quick actions</div>
+        <button id="refreshBtn" class="btn btn-primary" style="width:100%">Refresh history</button>
       </div>
-
-      <div class="details">
-        <div class="detail">Humidity: <span id="humidity">--</span>%</div>
-        <div class="detail">Wind: <span id="wind">--</span> m/s</div>
-        <div class="detail">Pressure: <span id="pressure">--</span> hPa</div>
-      </div>
-
-      <div id="hint" class="hint">Tip: Allow your browser to use location to get weather for your current place.</div>
-    </div>
-
-    <div id="error" class="hint hidden" style="color:#b91c1c"></div>
+    </aside>
   </div>
 
-  <script src="script.js"></script>
+  <div id="toast" class="toast hidden">Saved to history</div>
+
+  <script>
+    // CHANGE THIS to your deployed backend URL
+    const API_URL = "https://weather-app-backend1.onrender.com/api";
+
+    // elements
+    const cityInput = document.getElementById('cityInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const locBtn = document.getElementById('locBtn');
+    const card = document.getElementById('card');
+    const errorBox = document.getElementById('error');
+
+    const cityName = document.getElementById('cityName');
+    const timeEl = document.getElementById('time');
+    const weatherIcon = document.getElementById('weatherIcon');
+    const tempEl = document.getElementById('temp');
+    const descEl = document.getElementById('desc');
+    const humidityEl = document.getElementById('humidity');
+    const windEl = document.getElementById('wind');
+    const pressureEl = document.getElementById('pressure');
+    const historyEl = document.getElementById('history');
+    const toast = document.getElementById('toast');
+
+    function setLoading(isLoading){
+      if(isLoading){
+        searchBtn.disabled = true; searchBtn.innerHTML = '<span class="loader"></span>';
+      } else {
+        searchBtn.disabled = false; searchBtn.textContent = 'Search';
+      }
+    }
+
+    function showToast(msg){
+      toast.textContent = msg; toast.classList.remove('hidden');
+      setTimeout(()=> toast.classList.add('hidden'), 1600);
+    }
+
+    async function fetchWeather(city){
+      try{
+        errorBox.classList.add('hidden');
+        setLoading(true);
+        const res = await fetch(`${API_URL}/weather`, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ city })
+        });
+        if(!res.ok){
+          const err = await res.json().catch(()=>({error:'Failed to fetch'}));
+          throw new Error(err.error || 'Failed to fetch weather');
+        }
+        const data = await res.json();
+        renderWeather(data);
+        await loadHistory();
+        showToast('Saved to history');
+      } catch(e){
+        errorBox.textContent = e.message; errorBox.classList.remove('hidden');
+      } finally{ setLoading(false); }
+    }
+
+    function renderWeather(data){
+      card.classList.remove('hidden');
+      cityName.textContent = data.city + (data.country ? (', ' + data.country) : '');
+      timeEl.textContent = data.time || new Date().toLocaleString();
+      tempEl.textContent = Math.round(data.temp) + '°C';
+      descEl.textContent = data.description || '--';
+      humidityEl.textContent = data.humidity || '--';
+      windEl.textContent = data.wind || '--';
+      pressureEl.textContent = data.pressure || '--';
+      weatherIcon.textContent = data.description ? data.description[0].toUpperCase() : '☁️';
+    }
+
+    async function loadHistory(){
+      try{
+        const res = await fetch(`${API_URL}/history`);
+        if(!res.ok) throw new Error('Failed to load history');
+        const arr = await res.json();
+        historyEl.innerHTML = arr.map(item => `\
+          <div class=\"history-item\">\
+            <div>\
+              <div style=\"font-weight:600\">${item.city}</div>\
+              <small>${item.time}</small>\
+            </div>\
+            <div style=\"text-align:right\">\
+              <div style=\"font-weight:700\">${Math.round(item.temp)}°C</div>\
+              <small style=\"color:${'var(--muted)'}\">${item.description}</small>\
+            </div>\
+          </div>`).join('');
+      } catch(e){ console.error(e); }
+    }
+
+    // clear history (client-side only: would be better to have a server endpoint to delete)
+    document.getElementById('clearHistory').addEventListener('click', () => {
+      historyEl.innerHTML = ''; showToast('Cleared (local view)');
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', loadHistory);
+
+    // geolocation -> reverse geocode with Nominatim (no API key required)
+    locBtn.addEventListener('click', () => {
+      if(!navigator.geolocation) return alert('Geolocation not supported');
+      setLoading(true);
+      navigator.geolocation.getCurrentPosition(async pos => {
+        try{
+          const { latitude: lat, longitude: lon } = pos.coords;
+          const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`,
+            { headers: { 'Accept':'application/json' } });
+          const geo = await geoRes.json();
+          const place = geo.address.city || geo.address.town || geo.address.village || geo.address.county || geo.display_name;
+          if(!place) throw new Error('Could not detect city from your location');
+          cityInput.value = place; await fetchWeather(place);
+        } catch(e){ errorBox.textContent = e.message; errorBox.classList.remove('hidden'); }
+        finally{ setLoading(false); }
+      }, err => { setLoading(false); alert('Location denied or unavailable'); });
+    });
+
+    // events
+    searchBtn.addEventListener('click', () => { const c = cityInput.value.trim(); if(c) fetchWeather(c); });
+    cityInput.addEventListener('keypress', e => { if(e.key === 'Enter') searchBtn.click(); });
+
+    // initial load
+    loadHistory();
+  </script>
 </body>
 </html>
