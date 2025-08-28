@@ -1,5 +1,7 @@
 const API_URL = "https://weather-app-backend1.onrender.com/api";
 
+
+
 // elements
 const cityInput = document.getElementById("cityInput");
 const searchBtn = document.getElementById("searchBtn");
@@ -16,6 +18,18 @@ const descEl = document.getElementById("desc");
 const humidityEl = document.getElementById("humidity");
 const windEl = document.getElementById("wind");
 const pressureEl = document.getElementById("pressure");
+
+// dashboard container
+let dashboardDiv;
+function ensureDashboard() {
+  if (!dashboardDiv) {
+    dashboardDiv = document.createElement("div");
+    dashboardDiv.className = "card";
+    dashboardDiv.style.marginTop = "16px";
+    dashboardDiv.innerHTML = `<h3 style="margin:0 0 10px">Recent Searches</h3><div id="history"></div>`;
+    document.querySelector(".app").appendChild(dashboardDiv);
+  }
+}
 
 // fetch weather and store in DB
 async function fetchWeather(city) {
@@ -40,8 +54,8 @@ async function fetchWeather(city) {
 function showWeather(data) {
   card.classList.remove("hidden");
   cityName.textContent = data.city;
-  countryEl.textContent = data.country || "";
   timeEl.textContent = data.time;
+  countryEl.textContent = data.country || "";
   tempEl.textContent = `${Math.round(data.temp)}°C`;
   descEl.textContent = data.description;
   humidityEl.textContent = data.humidity;
@@ -59,11 +73,12 @@ async function loadHistory() {
     if (!res.ok) throw new Error("Failed to load history");
     const history = await res.json();
 
+    ensureDashboard();
     const historyDiv = document.getElementById("history");
     historyDiv.innerHTML = history
       .map(item => `
         <div style="padding:6px 0; border-bottom:1px solid #eee; font-size:14px">
-          <b>${item.city}, ${item.country || ""}</b> — ${Math.round(item.temp)}°C, ${item.description} <br>
+          <b>${item.city}</b> — ${Math.round(item.temp)}°C, ${item.description} <br>
           <small style="color:#6b7280">${item.time}</small>
         </div>
       `)
