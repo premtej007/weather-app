@@ -62,6 +62,12 @@ body{
 
 .hidden{display:none}
 .center{display:flex; align-items:center; justify-content:center}
+.country {
+  font-size: 16px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
 
 /* micro interactions */
 button:active{transform:translateY(1px)}
