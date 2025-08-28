@@ -3,75 +3,45 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Weather — Clean & Reactive</title>
-
-  <!-- Fonts (optional) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-  <!-- Styles -->
+  <title>Simple OpenWeather Frontend</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <div class="panel">
-      <div class="heading">
-        <div>
-          <div class="title">Weather — Simple & Fast</div>
-          <div class="subtitle">Enter a city, get current weather & recent searches</div>
-        </div>
-        <div class="subtitle">Powered by OpenWeather + MongoDB</div>
-      </div>
-
-      <div class="controls">
-        <div class="searchbox">
-          <input id="cityInput" type="text" placeholder="e.g. Mumbai" value="London" aria-label="City name" />
-          <button id="searchBtn" class="btn btn-primary">Search</button>
-        </div>
-        <button id="locBtn" class="btn btn-ghost" title="Use my location">Use my location</button>
-      </div>
-
-      <div id="card" class="card-big hidden">
-        <div class="icon-big" id="weatherIcon">☁️</div>
-        <div class="meta">
-          <div class="city" id="cityName">City</div>
-          <div class="country" id="country">Country</div>
-          <div class="time" id="time">Local time</div>
-          <div class="temp" id="temp">--°C</div>
-          <div class="desc" id="desc">Description</div>
-
-          <div class="stats">
-            <div class="stat">Humidity: <strong id="humidity">--</strong>%</div>
-            <div class="stat">Wind: <strong id="wind">--</strong> m/s</div>
-            <div class="stat">Pressure: <strong id="pressure">--</strong> hPa</div>
-          </div>
-        </div>
-      </div>
-
-      <div id="error" class="hint hidden" style="color:#b91c1c"></div>
-      <div class="hint">Tip: Click <strong>Use my location</strong> to auto-detect your city (uses an open reverse-geocoding API).</div>
+  <div class="app">
+    <div class="search">
+      <input id="cityInput" type="text" placeholder="Enter city (e.g. London)" value="London" />
+      <button id="searchBtn">Search</button>
     </div>
 
-    <aside class="side">
-      <div class="card-side">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px">
-          <strong>Recent searches</strong>
-          <button id="clearHistory" class="btn btn-ghost" style="padding:6px 8px;font-size:13px">Clear</button>
+    <div id="card" class="card hidden">
+      <div class="top">
+        <div>
+          <div id="cityName" class="city">City</div>
+          <div id="time" class="time">Local time</div>
         </div>
-        <div id="history" class="history-list"></div>
+        <div id="country" class="time">Country</div>
       </div>
 
-      <div class="card-side center" style="flex-direction:column">
-        <div style="font-weight:600; margin-bottom:8px">Quick actions</div>
-        <button id="refreshBtn" class="btn btn-primary" style="width:100%">Refresh history</button>
+      <div class="main">
+        <div class="icon" id="weatherIcon">--</div>
+        <div>
+          <div id="temp" class="temp">--°C</div>
+          <div id="desc" class="desc">Description</div>
+        </div>
       </div>
-    </aside>
+
+      <div class="details">
+        <div class="detail">Humidity: <span id="humidity">--</span>%</div>
+        <div class="detail">Wind: <span id="wind">--</span> m/s</div>
+        <div class="detail">Pressure: <span id="pressure">--</span> hPa</div>
+      </div>
+
+      <div id="hint" class="hint">Tip: Allow your browser to use location to get weather for your current place.</div>
+    </div>
+
+    <div id="error" class="hint hidden" style="color:#b91c1c"></div>
   </div>
 
-  <div id="toast" class="toast hidden">Saved to history</div>
-
-  <!-- Script -->
   <script src="script.js"></script>
 </body>
 </html>
